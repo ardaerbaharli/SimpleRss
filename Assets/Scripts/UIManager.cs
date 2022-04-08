@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using ardaerbaharli;
+using SimpleRss;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -18,10 +19,14 @@ public class UIManager : MonoBehaviour
 
     [Header("Prefabs")] [SerializeField] private GameObject rssSourcePrefab;
 
+    private SourceHandler sourceHandler;
 
     private void Start()
     {
         rssSourcesList = rssSourcesHolder.GetComponent<RssSourcesList>();
+        sourceHandler = new SourceHandler();
+        var rssSources = sourceHandler.LoadAll();
+        rssSources.ForEach(CreateSource);
     }
 
     public void ShowRssSourceForm()
@@ -29,27 +34,45 @@ public class UIManager : MonoBehaviour
         rssForm.SetActive(true);
     }
 
-    public void AddRssSource()
+    private void HideRssSourceForm()
+    {
+        rssForm.SetActive(false);
+    }
+
+    public void AddRssSourceButton()
     {
         var itemURL = rssFormInput.text;
         if (!ValidateInput(itemURL)) return;
 
-        var source = Instantiate(rssSourcePrefab, rssSourcesHolder).GetComponent<RssSource>();
-        source.UpdatePosition();
-        source.URL = itemURL;
-        source.Host = itemURL.GetHost();
-        
-        var startIndex = source.Host.IndexOf('.') + 1;
-        var subLength = source.Host.LastIndexOf('.') - source.Host.IndexOf('.') - 1;
+
+        var rssSourceProperty = new RssSourceProperty();
+        rssSourceProperty.URL = itemURL;
+        rssSourceProperty.Host = itemURL.GetHost();
+
+        var startIndex = rssSourceProperty.Host.IndexOf('.') + 1;
+        var subLength = rssSourceProperty.Host.LastIndexOf('.') - rssSourceProperty.Host.IndexOf('.') - 1;
         if (subLength < 0)
         {
             subLength = startIndex - 1;
             startIndex = 0;
         }
 
-        source.Title = source.Host.Substring(startIndex, subLength);
-        source.name = source.Title;
-        source.UpdateTitleUI();
+        rssSourceProperty.Title = rssSourceProperty.Host.Substring(startIndex, subLength);
+        CreateSource(rssSourceProperty);
+        sourceHandler.Save(rssSourceProperty);
+
+        HideRssSourceForm();
+    }
+
+    private void CreateSource(RssSourceProperty rssSourceProperty)
+    {
+        var source = Instantiate(rssSourcePrefab, rssSourcesHolder).GetComponent<RssSource>();
+        source.UpdatePosition();
+
+        source.name = rssSourceProperty.Title;
+        source.rssSourceProperty = rssSourceProperty;
+
+        source.UpdateUI();
         rssSourcesList.Add(source);
     }
 

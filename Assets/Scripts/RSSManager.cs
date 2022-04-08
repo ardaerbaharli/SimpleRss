@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CodeHollow.FeedReader;
 using SimpleRss;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RSSManager : MonoBehaviour
 {
@@ -29,6 +30,8 @@ public class RSSManager : MonoBehaviour
         var rssItemProperties = await GetFeedItems();
         foreach (var property in rssItemProperties)
         {
+            if (SceneManager.GetActiveScene().name.Equals("Main"))
+                break;
             var rssItemObject = Instantiate(rssItemPrefab, rssItemsHolder);
             var rssItem = rssItemObject.GetComponent<RssItem>();
             rssItem.SetProperties(property);
@@ -40,7 +43,7 @@ public class RSSManager : MonoBehaviour
 
     private async Task<List<RssItemProperty>> GetFeedItems()
     {
-        var url = activeRssSource.URL;
+        var url = activeRssSource.rssSourceProperty.URL;
 
         var feed = await FeedReader.ReadAsync(url);
         var rssItemProperties = new List<RssItemProperty>();

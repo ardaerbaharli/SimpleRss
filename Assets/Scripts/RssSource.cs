@@ -4,10 +4,6 @@ using UnityEngine.UI;
 
 public class RssSource : MonoBehaviour
 {
-    [Header("Fields")] public string URL;
-    public string Title;
-    public string Host;
-
     [Header("UI Elements")] [SerializeField]
     private Text titleText;
 
@@ -16,6 +12,8 @@ public class RssSource : MonoBehaviour
     public float height;
     private RssSourcesList parent;
     private RectTransform rect;
+    public RssSourceProperty rssSourceProperty;
+
 
     private void Awake()
     {
@@ -29,9 +27,9 @@ public class RssSource : MonoBehaviour
         FindObjectOfType<Manager>().LoadFeed(this);
     }
 
-    public void UpdateTitleUI()
+    public void UpdateUI()
     {
-        titleText.text = Title;
+        titleText.text = rssSourceProperty.Title;
     }
 
 
